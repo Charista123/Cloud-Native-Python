@@ -2,7 +2,12 @@ from flask import Flask
 from flask import jsonify
 from flask import abort
 from flask import make_response
+from flask_cors import CORS, cross_origin
 from flask import request
+from flask import render_template
+from flask import url_for
+from flask import session
+from flask import redirect
 from time import strftime
 from time import gmtime
 import json
@@ -10,6 +15,40 @@ import sqlite3
 
 app = Flask(__name__)
 app.config['JSONIFY_PRETTYPRINT_REGULAR']= False
+app.secret_key = 'F12Zr47j\3yX R~X@H!jmM]Lwf/,?KT'
+CORS(app)
+
+@app.route('/set_cookie')
+def cookie_insertion():
+    redirect_to_main = redirect('/')
+    response = current_app.make_response(redirect_to_main)
+    response.set_sookie('cookie_name',value='values')
+    return response
+    
+@app.route('/clear')
+def clearsession():
+    session.clear()
+    return redirect(url_for('main'))
+
+@app.route('/addname')
+def addname():
+    if request.args.get('yourname'):
+        session['name'] = request.args.get('yourname')
+        return redirect(url_for('main'))
+    else:
+        return render_template('addname.html', session=session)
+
+@app.route('/')
+def main():
+    return render_template('main.html')
+
+@app.route('/addtweets')
+def addtweetsjs():
+    return render_template('addtweets.html')
+
+@app.route('/adduser')
+def adduser():
+    return render_template('adduser.html')
 
 @app.route('/api/v2/tweets', methods=['POST'])
 def add_tweets():
@@ -74,7 +113,7 @@ def list_tweets():
     if data != 0:
         for row in data:
             tweets = {}
-            tweets['Tweet By'] = row[0]
+            tweets['Tweet_By'] = row[0]
             tweets['Body'] = row[1]
             tweets['Timestamp'] = row[2]
             tweets['Id'] = row[3]
